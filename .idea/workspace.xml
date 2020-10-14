@@ -16,12 +16,16 @@
         <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
       </path>
     </expand>
-    <select />
+    <select>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="BRANCH:main" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </select>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="da8f6c5e-2e88-4a6d-a51f-82b1041ec21b" name="Default Changelist" comment="initial blocks">
-      <change beforePath="$PROJECT_DIR$/model/model_layers.py" beforeDir="false" afterPath="$PROJECT_DIR$/model/model_layers.py" afterDir="false" />
-    </list>
+    <list default="true" id="da8f6c5e-2e88-4a6d-a51f-82b1041ec21b" name="Default Changelist" comment="Initial Commit&#10;Add: Git Ignore" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -72,7 +76,28 @@
       <option name="project" value="LOCAL" />
       <updated>1602513998733</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Add: Building layer components">
+      <created>1602682819398</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1602682819398</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Initial Commit&#10;Add: Git Ignore">
+      <created>1602683054707</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1602683054707</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Initial Commit&#10;Add: Git Ignore">
+      <created>1602683072152</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1602683072152</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -80,7 +105,19 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="main" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
           </value>
         </entry>
       </map>
@@ -90,13 +127,19 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="positional encoding &amp; scaled dot product attention" />
     <MESSAGE value="initial blocks" />
-    <option name="LAST_COMMIT_MESSAGE" value="initial blocks" />
+    <MESSAGE value="Add: Building layer components" />
+    <MESSAGE value="Initial Commit&#10;Add: Git Ignore" />
+    <option name="LAST_COMMIT_MESSAGE" value="Initial Commit&#10;Add: Git Ignore" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="552" y="253" key="Vcs.Push.Dialog.v2" timestamp="1602602889211">
+    <state x="92" y="92" width="1736" height="856" key="DiffContextDialog" timestamp="1602683099378">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="552" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040/1920.0.1920.1040@0.0.1920.1040" timestamp="1602602889211" />
+    <state x="92" y="92" width="1736" height="856" key="DiffContextDialog/0.0.1920.1040/1920.0.1920.1040@0.0.1920.1040" timestamp="1602683099378" />
+    <state x="552" y="253" key="Vcs.Push.Dialog.v2" timestamp="1602682849395">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="552" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040/1920.0.1920.1040@0.0.1920.1040" timestamp="1602682849395" />
     <state x="623" y="225" width="672" height="678" key="search.everywhere.popup" timestamp="1602581314886">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
