@@ -100,4 +100,80 @@ class DecoderLayer(tf.keras.layers.Layer):
         self.ffn_dr = tf.keras.layers.Dropout(rate)
 
     def call(self, decoder_input, encoder_output, mha_1_mask, mha_2_mask, training):
-        pass
+        input_res = decoder_input
+        attn1, attn1_weight = self.mha_1(decoder_input, decoder_input, decoder_input, mha_1_mask)
+        attn1 = self.mha_1_dr(attn1)
+        out1 = self.mha_1_ln(attn1 + input_res)
+
+        attn2, attn2_weight = self.mha_2(q=out1, k=encoder_output, v=encoder_output, mask=mha_2_mask)
+        attn2 = self.mha_2_dr(attn2)
+        out2 = self.mha_ln(attn2 + out1)
+
+        ffn_out = self.ffn(out2)
+        ffn_out = self.ffn_dr(ffn_out)
+        ffn_out = self.ffn_lr(ffn_out + out2)
+
+        return ffn_out, attn1_weight, attn2_weight
+
+
+
+class Encoder(tf.keras.layers.Layer):
+    def __init__(self, num_heads, model_dim, ffn_units, num_layers, input_vocab_size, maximum_position_encoding, rate=0.1):
+        super(Encoder, self).__init__()
+        self.num_heads = num_heads
+        self.model_dim = model_dim
+        self.ffn_units = ffn_units
+        self.num_layers = num_layers
+        self.input_vocab_size = input_vocab_size
+        self.maximum_position_encoding = maximum_position_encoding
+        self.rate = rate
+
+        self.embedding = tf.keras.layers.Embedding(self.input_vocab_size, self.model_dim)
+        self.positional_encoding = positional_encoding(self.maximum_position_encoding, self.model_dim)
+        self.embedding_dr =  tf.keras.layers.Dropout(self.rate)
+
+        self.enc_layers = [EncoderLayer(num_heads=self.num_heads, model_dim=self.model_dim, ffn_units=self.ffn_units, rate=self.rate) for _ in range(self.num_layers)]
+
+
+    def call(self, encoder_input, mask, training):
+        seq_len = tf.shape(encoder_input)[1]
+        x = self.embedding(encoder_input)
+        x *= tf.math.sqrt(tf.cast(self.model_dim, tf.float32))
+        x += self.positional_encoding[:, :seq_len, :]
+
+        x = self.dropout(x, training=training)
+
+        for i in range(self.num_layers):
+            x = self.enc_layers[i](q=x, k=x, v=x, mask=mask, training=training)
+
+        return x
+
+
+class Decoder(tf.keras.layers.Layer):
+    def __init__(self, num_heads, model_dim, ffn_units, num_layers, input_vocab_size, maximum_position_encoding, rate=0.1):
+        super(Decoder, self).__init__()
+        self.num_heads = num_heads
+        self.model_dim = model_dim
+        self.ffn_units = ffn_units
+        self.num_layers = num_layers
+        self.input_vocab_size = input_vocab_size
+        self.maximum_position_encoding = maximum_position_encoding
+        self.rate = rate
+
+        self.embedding = tf.keras.layers.Embedding(self.input_vocab_size, self.model_dim)
+        self.position_encoding = positional_encoding(self.maximum_position_encoding, self.model_dim)
+        self.embedding_dr = tf.keras.layers.Dropout(self.rate)
+
+        self.dec_layers = [DecoderLayer(num_heads=self.num_heads, model_dim=self.model_dim, ffn_units=self.ffn_units, rate=self.rate) for _ in range(self.num_layers)]
+
+    def call(self, decoder_input, encoder_output, mask_1, mask_2, training):
+        seq_len = tf.shape(decoder_input)[1]
+        x = self.embedding(decoder_input)
+        x *= tf.math.sqrt(tf.cast(self.model_dim, tf.float32))
+        x += self.position_encoding[:, :seq_len, :]
+        x = self.embedding_dr(x, training=training)
+
+        for i in range(self.num_layers):
+            x, attn1, attn2 = self.dec_layers[i](x, encoder_output, mask_1, mask_2, training)
+
+        return x
