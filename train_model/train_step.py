@@ -10,4 +10,4 @@ def train_step(inp, tar):
     tar_inp = tar[:, :-1]
     tar_real = tar[:, 1:]
 
-    pass
+
