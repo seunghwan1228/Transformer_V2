@@ -1,4 +1,3 @@
-import tensorflow as tf
 import tensorflow_datasets as tfds
 
 
@@ -10,4 +9,3 @@ class GetData:
     def get_data(self):
         examples, metadata = tfds.load(self.data_name, with_info=True, as_supervised=True)
         return examples, metadata
-
