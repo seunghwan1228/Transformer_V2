@@ -76,3 +76,6 @@ class TrainModel:
 
         self.train_loss.update_state(loss_value)
         self.train_acc.update_state(tar_real, prediction)
+
+    def train_model(self, inp, tar, config):
+        pass
