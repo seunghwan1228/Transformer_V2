@@ -4,9 +4,6 @@ import tensorflow_datasets as tfds
 from nlp_data.get_data import GetData
 
 
-
-
-
 class PreprocessData:
     def __init__(self, data_name, filter_length, buffer_size, batch_size):
         self.data_name = data_name
@@ -17,16 +14,16 @@ class PreprocessData:
         self.examples, self.metadata = GetData(self.data_name).get_data()
         self.train_examples, self.val_examples = self.examples['train'], self.examples['validation']
 
-
     def build_tokenizer(self):
-        tokenizer_lang_1 = tfds.deprecated.text.SubwordTextEncoder.build_from_corpus((en.numpy() for pt, en in self.train_examples), target_vocab_size=2**13)
-        tokenizer_lang_2 = tfds.deprecated.text.SubwordTextEncoder.build_from_corpus((pt.numpy() for pt, en in self.train_examples), target_vocab_size=2**13)
+        tokenizer_lang_1 = tfds.deprecated.text.SubwordTextEncoder.build_from_corpus(
+            (en.numpy() for pt, en in self.train_examples), target_vocab_size=2 ** 13)
+        tokenizer_lang_2 = tfds.deprecated.text.SubwordTextEncoder.build_from_corpus(
+            (pt.numpy() for pt, en in self.train_examples), target_vocab_size=2 ** 13)
 
         self.tokenizer_lang_1 = tokenizer_lang_1
         self.tokenizer_lang_2 = tokenizer_lang_2
 
         return tokenizer_lang_1, tokenizer_lang_2
-
 
     def get_data_sample(self):
         lang_one_sample = []
@@ -39,12 +36,12 @@ class PreprocessData:
         print(f'Language One: {lang_one_sample}\n')
         print(f'Language Two: {lang_two_sample}\n')
 
-
     def encode_text(self, lang1, lang2):
-        lang1 = [self.tokenizer_lang_1.vocab_size] + self.tokenizer_lang_1.encode(lang1.numpy()) + [self.tokenizer_lang_1.vocab_size + 1]
-        lang2 = [self.tokenizer_lang_2.vocab_size] + self.tokenizer_lang_2.encode(lang2.numpy()) + [self.tokenizer_lang_2.vocab_size + 1]
+        lang1 = [self.tokenizer_lang_1.vocab_size] + self.tokenizer_lang_1.encode(lang1.numpy()) + [
+            self.tokenizer_lang_1.vocab_size + 1]
+        lang2 = [self.tokenizer_lang_2.vocab_size] + self.tokenizer_lang_2.encode(lang2.numpy()) + [
+            self.tokenizer_lang_2.vocab_size + 1]
         return lang1, lang2
-
 
     def tf_encode_text(self, lang1, lang2):
         lang1_result, lang2_result = tf.py_function(self.encode_text, [lang1, lang2], [tf.int64, tf.int64])
@@ -54,7 +51,6 @@ class PreprocessData:
 
     def filter_data(self, x, y):
         return tf.logical_and(tf.size(x) <= self.filter_length, tf.size(y) <= self.filter_length)
-
 
     def process_data(self, dataset):
         dataset = dataset.map(self.tf_encode_text)
@@ -75,13 +71,6 @@ class PreprocessData:
         train_data = self.process_data(self.train_examples)
         valid_data = self.process_data(self.val_examples)
         return train_data, valid_data
-
-
-
-
-
-
-
 
 
 if __name__ == '__main__':
