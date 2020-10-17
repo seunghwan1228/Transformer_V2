@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from train_model.train_utils import create_padding_mask, create_lookahead_mask
+from model_trainer.train_utils import create_padding_mask, create_lookahead_mask
 from config_model.model_config import ModelConfig
 
 
