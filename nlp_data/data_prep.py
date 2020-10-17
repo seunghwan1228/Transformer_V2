@@ -77,4 +77,5 @@ if __name__ == '__main__':
     # Convert TF-Dataset
     train_data_converted = train_data.map(pdata.tf_encode_text)
 
+    # Check Data
     next(iter(train_data_converted))
