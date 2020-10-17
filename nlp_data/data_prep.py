@@ -8,8 +8,12 @@ from nlp_data.get_data import GetData
 
 
 class PreprocessData:
-    def __init__(self, data_name):
+    def __init__(self, data_name, filter_length, buffer_size, batch_size):
         self.data_name = data_name
+        self.filter_length = filter_length
+        self.buffer_size = buffer_size
+        self.batch_size = batch_size
+
         self.examples, self.metadata = GetData(self.data_name).get_data()
         self.train_examples, self.val_examples = self.examples['train'], self.examples['validation']
 
@@ -48,8 +52,32 @@ class PreprocessData:
         lang2_result.set_shape([None])
         return lang1_result, lang2_result
 
-    def process_data(self):
-        pass
+    def filter_data(self, x, y):
+        return tf.logical_and(tf.size(x) <= self.filter_length, tf.size(y) <= self.filter_length)
+
+
+    def process_data(self, dataset):
+        dataset = dataset.map(self.tf_encode_text)
+        dataset = dataset.filter(self.filter_data)
+        dataset = dataset.cache()
+        dataset = dataset.shuffle(self.buffer_size)
+        dataset = dataset.padded_batch(self.batch_size)
+        dataset = dataset.prefetch(tf.data.experimental.AUTOTUNE)
+        return dataset
+
+    def __call__(self):
+        print('Data Sample\n')
+        self.get_data_sample()
+
+        print('Building Tokenizer\n')
+        self.build_tokenizer()
+
+        train_data = self.process_data(self.train_examples)
+        valid_data = self.process_data(self.val_examples)
+        return train_data, valid_data
+
+
+
 
 
 
@@ -58,10 +86,10 @@ class PreprocessData:
 
 if __name__ == '__main__':
     # Initialize object
-    pdata = PreprocessData('ted_hrlr_translate/pt_to_en')
+    pdata = PreprocessData('ted_hrlr_translate/pt_to_en', 100, 20000, 64)
 
     # Build Tokenizer
-    tokenizer_en, tokenizer_pt = pdata.build_tokenizer()
+    tokenizer_pt, tokenizer_en = pdata.build_tokenizer()
 
     # Test Tokenizer
     sample_string = 'Transformer is awesome.'
@@ -79,3 +107,9 @@ if __name__ == '__main__':
 
     # Check Data
     next(iter(train_data_converted))
+
+    # TF-Data Created
+    train_data, val_data = pdata()
+
+    # Show encoded data
+    print(next(iter(train_data)))
