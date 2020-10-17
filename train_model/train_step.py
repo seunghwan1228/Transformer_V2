@@ -1,6 +1,7 @@
 import tensorflow as tf
 
 from train_model.train_utils import create_padding_mask, create_lookahead_mask
+from config_model.model_config import ModelConfig
 
 
 def create_mask(inp, tar):
@@ -31,6 +32,7 @@ class TrainModel:
     def __init__(self, model, model_dim):
         self.model = model
         self.model_dim = model_dim
+        self.config = ModelConfig()
         self.loss_obj = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True, reduction='none')
         self.lr_schedule = CustomSchedule(self.model_dim)
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=self.lr_schedule,
@@ -41,6 +43,7 @@ class TrainModel:
         self.train_loss = tf.metrics.Mean(name='Train loss')
         self.train_acc = tf.metrics.SparseCategoricalAccuracy(name='Train Acc')
 
+
     def loss_fun_one(self, real, pred):
         mask = tf.math.logical_not(tf.math.equal(real, 0))
         loss_ = self.loss_obj(real, pred)
@@ -48,11 +51,13 @@ class TrainModel:
         loss_ *= mask
         return tf.reduce_sum(loss_) / tf.reduce_sum(mask)
 
+
     def loss_fun_two(self, real, pred):
         mask = tf.math.logical_not(tf.math.equal(real, 0))
         mask = tf.cast(mask, tf.float32)
         loss_ = self.loss_obj(real, pred, sample_weight=mask)
         return loss_
+
 
     @tf.function(input_signature=[tf.TensorSpec(shape=(None, None), dtype=tf.int64),
                                   tf.TensorSpec(shape=(None, None), dtype=tf.int64)])
@@ -77,5 +82,31 @@ class TrainModel:
         self.train_loss.update_state(loss_value)
         self.train_acc.update_state(tar_real, prediction)
 
-    def train_model(self, inp, tar, config):
-        pass
+
+    def train_model(self, dataset):
+        # Initialize CKPT
+        checkpoint_path = './checkpoints/train'
+        ckpt = tf.train.Checkpoint(model = self.model,
+                                   opitmizer = self.optimizer)
+        ckpt_manager = tf.train.CheckpointManager(checkpoint=ckpt,
+                                                  directory=checkpoint_path,
+                                                  max_to_keep=5,
+                                                  keep_checkpoint_every_n_hours=1)
+        if ckpt_manager.latest_checkpoint:
+            ckpt.restore(ckpt_manager.latest_checkpoint)
+            print(f'Re-Start From Restored Ckpt: {ckpt_manager.latest_checkpoint}')
+
+        for epoch in self.config.epochs:
+            print(f'Epoch: {epoch}...\n')
+
+            for batch, (inp, tar) in enumerate(dataset):
+                self.train_step(inp, tar)
+
+                if batch % 50 == 0:
+                    print(f'Epoch: {epoch+1}\tBatch: {batch}\tLoss: {self.train_loss.result()}\tAccuracy: {self.train_acc.result()}\n')
+
+            if epoch % 10 == 0:
+                ckpt_saved_path = ckpt_manager.save(checkpoint_number=epoch)
+                print(f"Model Saved at Epoch: {epoch}\tSaved Path : {ckpt_saved_path}\n")
+
+            print(f'Epoch: {epoch + 1}\tLoss: {self.train_loss.result()}\tAccuracy: {self.train_acc.result()}')
