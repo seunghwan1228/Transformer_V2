@@ -70,7 +70,7 @@ class EncoderLayer(tf.keras.layers.Layer):
         input_res = q
         context, attn_weight = self.mha(q, k, v, mask)
         context = self.mha_dr(context, training=training)
-        context_1 = self.ln(context + input_res)
+        context_1 = self.mha_ln(context + input_res)
 
         ffn_out = self.ffn(context_1)
         ffn_out = self.ffn_dr(ffn_out, training=training)
@@ -107,11 +107,11 @@ class DecoderLayer(tf.keras.layers.Layer):
 
         attn2, attn2_weight = self.mha_2(q=out1, k=encoder_output, v=encoder_output, mask=mha_2_mask)
         attn2 = self.mha_2_dr(attn2)
-        out2 = self.mha_ln(attn2 + out1)
+        out2 = self.mha_2_ln(attn2 + out1)
 
         ffn_out = self.ffn(out2)
         ffn_out = self.ffn_dr(ffn_out)
-        ffn_out = self.ffn_lr(ffn_out + out2)
+        ffn_out = self.ffn_ln(ffn_out + out2)
 
         return ffn_out, attn1_weight, attn2_weight
 
@@ -141,7 +141,7 @@ class Encoder(tf.keras.layers.Layer):
         x *= tf.math.sqrt(tf.cast(self.model_dim, tf.float32))
         x += self.positional_encoding[:, :seq_len, :]
 
-        x = self.dropout(x, training=training)
+        x = self.embedding_dr(x, training=training)
 
         for i in range(self.num_layers):
             x = self.enc_layers[i](q=x, k=x, v=x, mask=mask, training=training)

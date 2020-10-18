@@ -96,7 +96,7 @@ class TrainModel:
             ckpt.restore(ckpt_manager.latest_checkpoint)
             print(f'Re-Start From Restored Ckpt: {ckpt_manager.latest_checkpoint}')
 
-        for epoch in self.config.epochs:
+        for epoch in range(self.config.epochs):
             print(f'Epoch: {epoch}...\n')
 
             for batch, (inp, tar) in enumerate(dataset):
