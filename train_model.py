@@ -35,3 +35,20 @@ class TrainTransformer:
                            ffn_units=self.config.ffn_units,
                            num_layers=self.config.num_layers,
                            rate=self.config.dropout_rate)
+
+    def train_model(self):
+        train_data, valid_data = self.load_data()
+        model = self.build_model()
+
+        trainer = TrainModel(model=model,
+                             model_dim=self.config.model_dim)
+
+        # Train model
+        trainer.train_model(train_data)
+
+
+if __name__ == '__main__':
+    test_trainer = TrainTransformer(data_name='ted_hrlr_translate/pt_to_en',
+                                    filter_length=100, buffer_size=20000, batch_size= 64)
+
+    test_trainer.train_model()
