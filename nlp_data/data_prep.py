@@ -74,7 +74,7 @@ class PreprocessData:
 
     def tpu_process_data(self, dataset, batch_size):
         dataset = dataset.map(self.tf_encode_text)
-        dataset = dataset.filter(self.filter_data)
+        # dataset = dataset.filter(self.filter_data)
         dataset = dataset.cache()
         dataset = dataset.shuffle(self.buffer_size)
         dataset = dataset.padded_batch(batch_size)
