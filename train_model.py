@@ -11,6 +11,12 @@ from model_trainer.train_utils import create_mask
 
 class TrainTransformer:
     def __init__(self, data_name, filter_length, buffer_size, batch_size, use_tpu=False):
+        if self.use_tpu:
+            self.tpu = tf.distribute.cluster_resolver.TPUClusterResolver()  # TPU detection
+            tf.config.experimental_connect_to_cluster(self.tpu)
+            tf.tpu.experimental.initialize_tpu_system(self.tpu)
+            self.tpu_strategy = tf.distribute.experimental.TPUStrategy(self.tpu)
+
         self.data_name = data_name
         self.filter_length = filter_length
         self.buffer_size = buffer_size
@@ -22,11 +28,7 @@ class TrainTransformer:
                                    buffer_size=self.buffer_size,
                                    batch_size=self.batch_size)
 
-        if self.use_tpu:
-            self.tpu = tf.distribute.cluster_resolver.TPUClusterResolver()  # TPU detection
-            tf.config.experimental_connect_to_cluster(self.tpu)
-            tf.tpu.experimental.initialize_tpu_system(self.tpu)
-            self.tpu_strategy = tf.distribute.experimental.TPUStrategy(self.tpu)
+
 
     def load_data(self):
         train_data, valid_data = self.data()
