@@ -80,17 +80,17 @@ class TrainTransformer:
                     tar_real = tar[:, 1:]
                     enc_mask, dec_attn_one_mask, dec_attn_two_mask = create_mask(inp, tar_inp)
                     with tf.GradientTape() as tape:
-                        prediction = self.model(encoder_input=inp,
-                                                encoder_mask=enc_mask,
-                                                decoder_input=tar_inp,
-                                                decoder_mask_1=dec_attn_one_mask,
-                                                decoder_mask_2=dec_attn_two_mask,
-                                                training=True)
+                        prediction = model(encoder_input=inp,
+                                           encoder_mask=enc_mask,
+                                           decoder_input=tar_inp,
+                                           decoder_mask_1=dec_attn_one_mask,
+                                           decoder_mask_2=dec_attn_two_mask,
+                                           training=True)
                         loss_value = self.loss_fun_one(tar_real, prediction)
                         loss_value = tf.nn.compute_average_loss(loss_value, global_batch_size=self.batch_size)
 
                     gradient = tape.gradient(loss_value, self.model.trainable_variables)
-                    self.optimizer.apply_gradients(zip(gradient, self.model.trainable_variables))
+                    optimizer.apply_gradients(zip(gradient, self.model.trainable_variables))
 
                     training_mean.update_state(loss_value * self.tpu_strategy.num_replicas_in_sync)
                     training_acc.update_state(tar_real, prediction)
