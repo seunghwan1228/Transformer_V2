@@ -72,6 +72,21 @@ class PreprocessData:
         valid_data = self.process_data(self.val_examples)
         return train_data, valid_data
 
+    def tpu_process_data(self, dataset, batch_size):
+        dataset = dataset.map(self.tf_encode_text)
+        dataset = dataset.filter(self.filter_data)
+        dataset = dataset.cache()
+        dataset = dataset.shuffle(self.buffer_size)
+        dataset = dataset.padded_batch(batch_size)
+        dataset = dataset.prefetch(tf.data.experimental.AUTOTUNE)
+        return dataset
+
+    def prepare_tpu_data(self, batch_size):
+        train_data = self.process_data(self.train_examples, batch_size)
+        valid_data = self.process_data(self.val_examples, batch_size)
+        return train_data, valid_data
+
+
 
 if __name__ == '__main__':
     # Initialize object

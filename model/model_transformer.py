@@ -25,10 +25,10 @@ class Transformer(tf.keras.Model):
         self.num_layers = num_layers
         self.rate = rate
 
-        self.encoder = Encoder(num_heads = self.num_heads,
-                               modeldim = self.model_dim,
+        self.encoder = Encoder(num_heads=self.num_heads,
+                               model_dim=self.model_dim,
                                ffn_units=self.ffn_units,
-                               num_layers = self.num_layers,
+                               num_layers=self.num_layers,
                                input_vocab_size=self.encoder_vocab_size,
                                maximum_position_encoding=self.encoder_position_encoding_size,
                                rate=self.rate)

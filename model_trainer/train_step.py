@@ -1,19 +1,7 @@
 import tensorflow as tf
 
-from train_model.train_utils import create_padding_mask, create_lookahead_mask
+from model_trainer.train_utils import create_padding_mask, create_lookahead_mask, create_mask
 from config_model.model_config import ModelConfig
-
-
-def create_mask(inp, tar):
-    # Encoder mask
-    enc_padding_mask = create_padding_mask(inp)
-    # Decoder mask: 1st
-    lookahead_mask = create_lookahead_mask(tf.shape(tar)[1])
-    dec_one_mask = create_padding_mask(tar)
-    dec_complex_mask = tf.math.maximum(dec_one_mask, lookahead_mask)
-    # Decoder mask: 2nd
-    dec_padding_mask = create_padding_mask(inp)
-    return enc_padding_mask, dec_complex_mask, dec_padding_mask
 
 
 class CustomSchedule(tf.keras.optimizers.schedules.LearningRateSchedule):
@@ -96,7 +84,7 @@ class TrainModel:
             ckpt.restore(ckpt_manager.latest_checkpoint)
             print(f'Re-Start From Restored Ckpt: {ckpt_manager.latest_checkpoint}')
 
-        for epoch in self.config.epochs:
+        for epoch in range(self.config.epochs):
             print(f'Epoch: {epoch}...\n')
 
             for batch, (inp, tar) in enumerate(dataset):
