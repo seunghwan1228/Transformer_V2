@@ -82,7 +82,6 @@ class PreprocessData:
         return dataset
 
     def prepare_tpu_data(self, batch_size):
-        # self.get_data_sample()
         self.build_tokenizer()
         train_data = self.tpu_process_data(self.train_examples, batch_size)
         valid_data = self.tpu_process_data(self.val_examples, batch_size)
