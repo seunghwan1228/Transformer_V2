@@ -5,6 +5,7 @@ from config_model.model_config import ModelConfig
 from model.model_transformer import Transformer
 from nlp_data.data_prep import PreprocessData
 from model_trainer.train_step import TrainModel, CustomSchedule
+from model_trainer.train_utils import create_mask
 
 
 
@@ -72,6 +73,27 @@ class TrainTransformer:
                 training_mean = tf.keras.metrics.Mean(name='Train loss')
                 training_acc = tf.keras.metrics.SparseCategoricalAccuracy(name='Train Acc')
 
+            @tf.function
+            def train_step(iterator):
+                def step_fn(self, inp, tar):
+                    tar_inp = tar[:, :-1]
+                    tar_real = tar[:, 1:]
+                    enc_mask, dec_attn_one_mask, dec_attn_two_mask = create_mask(inp, tar_inp)
+                    with tf.GradientTape() as tape:
+                        prediction = self.model(encoder_input=inp,
+                                                encoder_mask=enc_mask,
+                                                decoder_input=tar_inp,
+                                                decoder_mask_1=dec_attn_one_mask,
+                                                decoder_mask_2=dec_attn_two_mask,
+                                                training=True)
+                        loss_value = self.loss_fun_one(tar_real, prediction)
+
+                    gradient = tape.gradient(loss_value, self.model.trainable_variables)
+                    self.optimizer.apply_gradients(zip(gradient, self.model.trainable_variables))
+
+                    self.train_loss.update_state(loss_value)
+                    self.train_acc.update_state(tar_real, prediction)
+                self.tpu_strategy.run(step_fn, args=(next(iterator)))
 
 
         else:
