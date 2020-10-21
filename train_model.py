@@ -75,7 +75,8 @@ class TrainTransformer:
 
             @tf.function
             def train_step(self, iterator):
-                def step_fn(inp, tar):
+                def step_fn(inputs):
+                    inp, tar = inputs
                     tar_inp = tar[:, :-1]
                     tar_real = tar[:, 1:]
                     enc_mask, dec_attn_one_mask, dec_attn_two_mask = create_mask(inp, tar_inp)
