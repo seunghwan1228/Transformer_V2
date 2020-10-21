@@ -74,8 +74,8 @@ class TrainTransformer:
                 training_acc = tf.keras.metrics.SparseCategoricalAccuracy(name='Train Acc')
 
             @tf.function
-            def train_step(iterator):
-                def step_fn(self, inp, tar):
+            def train_step(self, iterator):
+                def step_fn(inp, tar):
                     tar_inp = tar[:, :-1]
                     tar_real = tar[:, 1:]
                     enc_mask, dec_attn_one_mask, dec_attn_two_mask = create_mask(inp, tar_inp)
@@ -87,13 +87,26 @@ class TrainTransformer:
                                                 decoder_mask_2=dec_attn_two_mask,
                                                 training=True)
                         loss_value = self.loss_fun_one(tar_real, prediction)
+                        loss_value = tf.nn.compute_average_loss(loss_value, global_batch_size=self.batch_size)
 
                     gradient = tape.gradient(loss_value, self.model.trainable_variables)
                     self.optimizer.apply_gradients(zip(gradient, self.model.trainable_variables))
 
-                    self.train_loss.update_state(loss_value)
-                    self.train_acc.update_state(tar_real, prediction)
+                    training_mean.update_state(loss_value * self.tpu_strategy.num_replicas_in_sync)
+                    training_acc.update_state(tar_real, prediction)
+
                 self.tpu_strategy.run(step_fn, args=(next(iterator)))
+
+            train_iterator = iter(train_data)
+
+            for epoch in range(self.config.epochs):
+                print(f'Epoch {epoch}')
+
+                for step in range(10000):
+                    train_step(train_iterator)
+                    print(training_mean.result())
+                    print(training_acc.result())
+                print()
 
 
         else:
