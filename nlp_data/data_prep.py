@@ -82,8 +82,8 @@ class PreprocessData:
         return dataset
 
     def prepare_tpu_data(self, batch_size):
-        train_data = self.process_data(self.train_examples, batch_size)
-        valid_data = self.process_data(self.val_examples, batch_size)
+        train_data = self.tpu_process_data(self.train_examples, batch_size)
+        valid_data = self.tpu_process_data(self.val_examples, batch_size)
         return train_data, valid_data
 
 
